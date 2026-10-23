@@ -20,6 +20,10 @@ export type ClaimAmountResult =
   | { ok: true; amount: string; units: bigint; receiveUnits: bigint }
   | { ok: false; error: ClaimAmountError };
 
+export function hasClaimable(balance: { available: string; decimals: number }): boolean {
+  return toUnits(balance.available, balance.decimals) > 0n;
+}
+
 // The fee is taken from the claimed amount.
 export function computeReceive(amountUnits: bigint, feeUnits: bigint): bigint {
   return amountUnits - feeUnits;

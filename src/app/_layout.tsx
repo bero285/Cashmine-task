@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { HeaderLink } from '@/components/header-link';
 import { LoadingState } from '@/components/loading-state';
+import { BalanceSyncProvider } from '@/hooks/use-balance-sync';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { TokenProvider, useToken } from '@/hooks/use-token';
 import { createQueryClient } from '@/services/query-client';
@@ -26,6 +27,8 @@ function RootStack() {
           }}
         />
         <Stack.Screen name="change-token" options={{ title: 'Change token' }} />
+        <Stack.Screen name="claim" options={{ title: 'Claim payback' }} />
+        <Stack.Screen name="claims/[id]" options={{ title: 'Claim' }} />
       </Stack.Protected>
       <Stack.Protected guard={!hasToken}>
         <Stack.Screen name="token" options={{ title: 'CashMine' }} />
@@ -42,9 +45,11 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <TokenProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <RootStack />
-        </ThemeProvider>
+        <BalanceSyncProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <RootStack />
+          </ThemeProvider>
+        </BalanceSyncProvider>
       </TokenProvider>
     </QueryClientProvider>
   );

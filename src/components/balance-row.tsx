@@ -1,8 +1,5 @@
-import { StyleSheet } from 'react-native';
-
+import { Card } from '@/components/card';
 import { LabelValueRow } from '@/components/label-value-row';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
 import type { Balance } from '@/services/types';
 import { formatUsd, usdTotals } from '@/utils/usd';
 
@@ -13,20 +10,12 @@ export function BalanceRow({ balance }: { balance: Balance }) {
   const usd = usdTotals([balance]).total;
 
   return (
-    <ThemedView type="backgroundElement" style={styles.card}>
+    <Card>
       <LabelValueRow label={balance.asset} value={formatUsd(usd)} heading />
       {/* Amounts shown exactly as the API sends them: no rounding, no float conversion. */}
       <LabelValueRow label="Available" value={balance.available} emphasis />
       <LabelValueRow label="Pending" value={balance.pending} />
       <LabelValueRow label="Claiming" value={balance.claiming} />
-    </ThemedView>
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
-    gap: Spacing.one,
-  },
-});

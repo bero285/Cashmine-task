@@ -45,7 +45,8 @@ export function Button({ label, onPress, variant = 'primary', disabled, loading 
 
 const useThemedStyles = createThemedStyles((theme) => ({
   primary: { backgroundColor: theme.primary },
-  secondary: { backgroundColor: theme.backgroundElement },
+  // backgroundSelected, not backgroundElement: stays visible inside cards too.
+  secondary: { backgroundColor: theme.backgroundSelected },
 }));
 
 const styles = StyleSheet.create({

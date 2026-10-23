@@ -2,6 +2,7 @@ import {
   ApiError,
   InvalidResponseError,
   NetworkError,
+  isDefiniteRejection,
   isRetryable,
   retryDelayMs,
 } from '@/services/api-error';
@@ -24,6 +25,20 @@ describe('isRetryable', () => {
 
   it('does not retry a response that breaks the API contract', () => {
     expect(isRetryable(new InvalidResponseError('bad'))).toBe(false);
+  });
+});
+
+describe('isDefiniteRejection', () => {
+  it.each([400, 401, 404, 409])('treats HTTP %i as "the claim was not created"', (status) => {
+    expect(isDefiniteRejection(apiError(status))).toBe(true);
+  });
+
+  it.each([429, 500, 503, 504])('treats HTTP %i as an unknown outcome', (status) => {
+    expect(isDefiniteRejection(apiError(status))).toBe(false);
+  });
+
+  it('treats a network failure as an unknown outcome', () => {
+    expect(isDefiniteRejection(new NetworkError('offline'))).toBe(false);
   });
 });
 

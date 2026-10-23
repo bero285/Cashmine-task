@@ -1,5 +1,10 @@
 import { formatUnits } from '@/utils/amount';
-import { computeReceive, validateClaimAmount, type ClaimRules } from '@/utils/claim-validation';
+import {
+  computeReceive,
+  hasClaimable,
+  validateClaimAmount,
+  type ClaimRules,
+} from '@/utils/claim-validation';
 
 const rules: ClaimRules = { decimals: 6, minAmount: '0.01', fee: '0.0012', available: '1.5' };
 
@@ -53,6 +58,16 @@ describe('validateClaimAmount', () => {
   it('rejects any amount when nothing is available', () => {
     const empty: ClaimRules = { ...rules, available: '0' };
     expect(validateClaimAmount('0.01', empty)).toEqual({ ok: false, error: 'aboveAvailable' });
+  });
+});
+
+describe('hasClaimable', () => {
+  it('is true when something is available', () => {
+    expect(hasClaimable({ available: '0.000001', decimals: 6 })).toBe(true);
+  });
+
+  it.each(['0', '0.000000'])('is false for %p', (available) => {
+    expect(hasClaimable({ available, decimals: 6 })).toBe(false);
   });
 });
 

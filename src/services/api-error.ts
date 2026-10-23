@@ -47,6 +47,12 @@ export function isRetryable(error: unknown): boolean {
   return false;
 }
 
+// For a POST: the server answered and refused (4xx except 429), so nothing was created.
+// Anything else (network, 429, 5xx, 504 TIMEOUT) means the outcome is unknown.
+export function isDefiniteRejection(error: unknown): boolean {
+  return error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 429;
+}
+
 const MAX_BACKOFF_MS = 8_000;
 
 // failureCount is 0 on the first failure (TanStack's convention).

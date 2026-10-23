@@ -1,56 +1,42 @@
-# Welcome to your Expo app 👋
+# CashMine payback (take-home)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Live:** TODO_LIVE_LINK (EAS Hosting)
 
-## Get started
+A web build of the CashMine mobile app, sized for a ~390 px phone screen. On first open it asks for
+an API token. The token is stored in the browser and never shipped in the code or the build.
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run locally
 
 ```bash
-npm run reset-project
+npm install
+npx expo start --web     # open the printed URL, paste your token
+npm test                 # unit tests (Jest, jest-expo preset)
+npx expo lint
+npx tsc --noEmit
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Deploy: `npx expo export --platform web`, then `npx eas-cli@latest deploy` (`web.output` is `server`).
 
-### Other setup steps
+## What works
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Token:** asked for on first open, hidden by default with a Show/Hide button, saved in the
+  browser and changeable from Home. Changing it clears all cached data. A 401 on any request
+  forgets the token and returns to the token screen with a "Token not accepted" notice.
+- **Balances (Home):** each asset's available, pending and claiming amounts, shown exactly as the
+  API sends them. Also: the USD total with an available / pending / claiming breakdown, a live
+  "Updated … ago" label from `asOf`, Refresh, auto-refresh every 15 s, and loading, error/retry
+  and empty states. A failed refresh keeps the last data on screen and says it may be stale.
+- **API layer:** every request goes through TanStack Query, with typed errors and runtime-checked
+  payloads. Only network errors, 429 and 5xx are retried; a 429 waits `retryAfterMs`. Requests
+  time out after 30 s.
+- **Money logic:** amount parsing, validation (format, decimals, min, available, fee), fee/receive
+  and USD totals are all done in `bigint`. All of it is unit tested (159 tests in the suite).
+- **Claim:**
+  - Pick an asset, enter an amount (`,` accepted as the decimal separator) or tap Max.
+  - See the fee and the amount you receive, then review and confirm.
+  - Each submission has an `Idempotency-Key`, saved before sending and reused on every retry and
+    after a reload. A lost response therefore can't create a second claim.
+  - Right after a claim, Home says "Updating after your claim…" and polls every 3 s until a
+    snapshot that includes the claim arrives (approach C in [NOTES.md](NOTES.md)).
+  - The claim's status page shows the claim as returned. Live status polling is not done yet;
+    see "Not done" in [NOTES.md](NOTES.md).

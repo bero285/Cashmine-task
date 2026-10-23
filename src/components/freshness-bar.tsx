@@ -12,14 +12,27 @@ type FreshnessBarProps = {
   isRefreshing: boolean;
   // A background refresh failed; the data shown is the last good snapshot.
   refreshFailed: boolean;
+  // A claim was just made and the shown snapshot doesn't include it yet (approach C).
+  awaitingClaim: boolean;
   onRefresh: () => void;
 };
 
-export function FreshnessBar({ asOf, isRefreshing, refreshFailed, onRefresh }: FreshnessBarProps) {
+function label(age: string, refreshFailed: boolean, awaitingClaim: boolean): string {
+  if (refreshFailed) return `Couldn't refresh. Showing data from ${age}.`;
+  if (awaitingClaim) return `Updating after your claim… Showing data from ${age}.`;
+  return `Updated ${age}`;
+}
+
+export function FreshnessBar({
+  asOf,
+  isRefreshing,
+  refreshFailed,
+  awaitingClaim,
+  onRefresh,
+}: FreshnessBarProps) {
   const theme = useTheme();
   const now = useNow();
-  const age = formatAge(asOf, now) ?? 'at an unknown time';
-  const text = refreshFailed ? `Couldn't refresh. Showing data from ${age}.` : `Updated ${age}`;
+  const age = formatAge(asOf, now) ?? 'an unknown time';
 
   return (
     <View style={styles.row}>
@@ -27,11 +40,12 @@ export function FreshnessBar({ asOf, isRefreshing, refreshFailed, onRefresh }: F
         type="small"
         themeColor={refreshFailed ? 'danger' : 'textSecondary'}
         style={styles.text}>
-        {text}
+        {label(age, refreshFailed, awaitingClaim)}
       </ThemedText>
-      {isRefreshing ? (
+      {/* Spinner for the whole wait after a claim, not just during each 3 s poll. */}
+      {isRefreshing || awaitingClaim ? (
         <View style={styles.spinner}>
-          <ActivityIndicator color={theme.primary} accessibilityLabel="Refreshing" />
+          <ActivityIndicator color={theme.primary} accessibilityLabel="Updating balances" />
         </View>
       ) : (
         <TextButton label={refreshFailed ? 'Retry' : 'Refresh'} onPress={onRefresh} />

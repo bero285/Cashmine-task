@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 
+import { Card } from '@/components/card';
 import { LabelValueRow } from '@/components/label-value-row';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import type { Balance } from '@/services/types';
 import { formatUsd, usdTotals } from '@/utils/usd';
@@ -18,7 +18,7 @@ export function TotalCard({ items }: { items: Balance[] }) {
   const total = formatUsd(totals.total);
 
   return (
-    <ThemedView type="backgroundElement" style={styles.card}>
+    <Card>
       <ThemedText type="small" themeColor="textSecondary">
         Total payback
       </ThemedText>
@@ -33,16 +33,11 @@ export function TotalCard({ items }: { items: Balance[] }) {
         <LabelValueRow label="Pending" value={formatUsd(totals.pending)} />
         <LabelValueRow label="Claiming" value={formatUsd(totals.claiming)} />
       </View>
-    </ThemedView>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
-    gap: Spacing.one,
-  },
   total: {
     fontVariant: ['tabular-nums'],
   },

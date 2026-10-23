@@ -15,6 +15,8 @@ brief but follow from it or from the API docs.
   a duplicate claim.
 - Token is stored with AsyncStorage (localStorage on web).
 - Activity: one list, newest first, as the API returns it; no filters.
+- Balance right after a claim: approach C (forward-only snapshots + wait for the snapshot that
+  includes the claim). Chosen over subtracting on screen (A) and banner-only (B).
 - The token is not validated on save; a bad token is detected by the first 401.
 - No inline styles anywhere, including the template's ThemedText/ThemedView (per-scheme StyleSheets).
 - Claim amounts are sent in canonical form ("0.50" → "0.5"), so one value always gives one body.
@@ -30,13 +32,13 @@ brief but follow from it or from the API docs.
 
 ## 0. Platform & constraints
 
-- [ ] Runs in the browser via `npx expo start --web`
+- [x] Runs in the browser via `npx expo start --web`
 - [x] Layout designed for a ~390 px phone screen; content stays readable on wider screens _(implied)_
 - [ ] Deployed link (EAS Hosting) that works when opened on a phone _(implied: "we will open your link")_
 - [x] API base URL defined in exactly one place
-- [ ] No token in code, repo or build
-- [ ] Only allowed libraries (TanStack Query + Expo template)
-- [ ] `npx expo lint` and `npx tsc --noEmit` pass
+- [x] No token in code, repo or build
+- [x] Only allowed libraries (TanStack Query + Expo template; AsyncStorage and ESLint dev deps approved)
+- [x] `npx expo lint` and `npx tsc --noEmit` pass (re-run at the end of every step)
 
 ## 1. Token
 
@@ -52,7 +54,7 @@ brief but follow from it or from the API docs.
 
 ## 2. API layer
 
-- [ ] Every request goes through TanStack Query
+- [x] Every request goes through TanStack Query
 - [x] Responses and errors strictly typed, no `any`
 - [x] Error envelope `{ error: { code, message, field?, retryAfterMs? } }` parsed into a typed error _(implied)_
 - [x] Network failures (no response) are a separate typed error _(implied)_
@@ -60,7 +62,8 @@ brief but follow from it or from the API docs.
 - [x] 429 waits `retryAfterMs` (or `Retry-After`) before retrying _(implied)_
 - [x] Client-side request timeout (30 s) so a stalled connection becomes a retryable error _(implied)_
 - [x] API payloads checked at runtime; a malformed 2xx body is a typed, non-retryable error _(implied)_
-- [ ] Amounts are kept as strings from the API; never JSON numbers, `Number` or `parseFloat`
+- [x] Amounts are kept as strings from the API; never JSON numbers, `Number` or `parseFloat`
+      (the only `Number()` reads the `Retry-After` header)
 
 ## 3. Money logic
 
@@ -95,35 +98,49 @@ brief but follow from it or from the API docs.
 
 ## 5. Claim
 
-- [ ] Pick an asset
-- [ ] Load claim options for that asset (minAmount, fee, destinations), with loading/error/retry
-- [ ] Choose a destination (`destinationId` is required; pick automatically when there is only one) _(implied)_
-- [ ] Enter an amount or tap Max (= available)
-- [ ] Validate: format, decimals, `minAmount <= amount <= available`
-- [ ] Amount must be greater than the fee so the receive amount is positive _(implied)_
-- [ ] Show fee and amount to receive before confirming
-- [ ] Confirm step, then submit
-- [ ] No double submit: button disabled while the request is in flight _(implied)_
-- [ ] `Idempotency-Key` created once per claim body and reused on every retry of that body _(implied: lost responses, 504)_
-- [ ] New key only when the body (asset, amount, destination) changes _(implied)_
-- [ ] Key + body persisted in AsyncStorage before sending; cleared only on a definite answer
-      (claim returned, or 400/409) _(decision 5)_
-- [ ] After a reload, an unconfirmed submission is offered for resubmission with the same key
+- [x] Pick an asset
+- [x] Load claim options for that asset (minAmount, fee, destinations), with loading/error/retry
+- [x] Choose a destination (`destinationId` is required; pick automatically when there is only one) _(implied)_
+- [x] Enter an amount or tap Max (= available)
+- [x] Validate: format, decimals, `minAmount <= amount <= available`
+- [x] Amount must be greater than the fee so the receive amount is positive _(implied)_
+- [x] Show fee and amount to receive before confirming
+- [x] Confirm step, then submit
+- [x] No double submit: button disabled while the request is in flight _(implied)_
+- [x] `Idempotency-Key` created once per claim body and reused on every retry of that body _(implied: lost responses, 504)_
+- [x] New key only when the body (asset, amount, destination) changes _(implied)_
+- [x] Key + body persisted in AsyncStorage before sending; cleared only on a definite answer
+      (claim returned, or a 4xx refusal: 400/401/404/409) _(decision 5)_
+- [x] After a reload, an unconfirmed submission is offered for resubmission with the same key
       (server replays the original claim if it was created) _(implied by decision 5)_
-- [ ] A persisted unconfirmed claim is never resubmitted under a different token _(implied)_
-- [ ] Network error / 5xx / 504 on submit: outcome unknown, user can retry safely with the same key _(implied)_
+- [x] A persisted unconfirmed claim is never resubmitted under a different token _(implied)_
+- [x] Network error / 5xx / 504 on submit: outcome unknown, user can retry safely with the same key _(implied)_
 - [ ] Server VALIDATION errors shown on the matching field (`field`), e.g. amount above live available _(implied)_
-- [ ] 409 IDEMPOTENCY_MISMATCH handled with a clear message _(implied)_
-- [ ] Assets with nothing available cannot be claimed, with a clear reason _(implied)_
+      — partly: the server message is shown on the review step with "Go back to change the claim";
+      it is not yet mapped onto the amount field
+- [x] 409 IDEMPOTENCY_MISMATCH handled: server message shown, draft cleared so the next attempt uses a new key _(implied)_
+- [x] Assets with nothing available cannot be claimed, with a clear reason _(implied)_
+
+### Balance right after a claim (decision: approach C)
+
+- [x] An older snapshot never replaces a newer one (`pickLatestSnapshot`)
+- [x] After a claim, Home keeps the current numbers, shows "Updating after your claim…" and polls
+      every 3 s until a snapshot with `asOf >= claim.createdAt` arrives; gives up after 60 s
+- [x] Claim form warns that available may be lower while that wait is on
+- [ ] Known limits: the wait is in memory only (after a reload the normal 15 s refresh applies);
+      it does not block a second claim; if the server labels lazily-built snapshots with an older
+      `asOf`, "Updating…" can last one extra 15 s cycle (numbers stay correct). Not verified
+      against the live API
 
 ## 6. Claim tracking
 
-- [ ] After submit, open the claim's status view
+- [x] After submit, open the claim's status view
 - [ ] Poll `GET /v1/claims/{id}` while `pending`; stop at `completed` / `failed`
 - [ ] Show `failureReason` when failed
-- [ ] Status view works after reload (claim id in the URL) _(implied)_
-- [ ] Loading, error/retry and not-found states _(implied)_
+- [x] Status view works after reload (claim id in the URL) _(implied)_
+- [x] Loading, error/retry and not-found states _(implied)_
 - [ ] Balances (and activity) refetched after claim creation and after it settles _(implied)_
+      — partly: refetched after creation (and approach C); not yet after it settles
 
 ## 7. Tests
 
