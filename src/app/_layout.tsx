@@ -1,12 +1,12 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useState } from 'react';
-import { useColorScheme } from 'react-native';
 
 import { HeaderLink } from '@/components/header-link';
 import { LoadingState } from '@/components/loading-state';
-import { createQueryClient } from '@/services/query-client';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { TokenProvider, useToken } from '@/hooks/use-token';
+import { createQueryClient } from '@/services/query-client';
 
 function RootStack() {
   const { isLoading, token } = useToken();

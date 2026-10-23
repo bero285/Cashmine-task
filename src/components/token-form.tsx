@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button } from '@/components/button';
-import { FieldButton } from '@/components/field-button';
+import { TextButton } from '@/components/text-button';
 import { TextField } from '@/components/text-field';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
@@ -50,7 +50,7 @@ export function TokenForm({ title, notice, onSaved, onCancel }: TokenFormProps) 
         spellCheck={false}
         autoFocus
         trailing={
-          <FieldButton
+          <TextButton
             label={visible ? 'Hide' : 'Show'}
             accessibilityLabel={visible ? 'Hide token' : 'Show token'}
             onPress={() => setVisible((v) => !v)}

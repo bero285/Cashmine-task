@@ -10,7 +10,7 @@ brief but follow from it or from the API docs.
   now, pending and claiming separately.
 - USD is rounded **down** to the cent (never overstate money).
 - `,` typed as the decimal separator is converted to `.` before validation; otherwise strict.
-- Web output is `single` (static SPA); not hosted on EAS.
+- Web output is `server`; the app is hosted on EAS Hosting (`eas deploy`).
 - Idempotency key for an unconfirmed claim is persisted in AsyncStorage so a reload cannot create
   a duplicate claim.
 - Token is stored with AsyncStorage (localStorage on web).
@@ -31,8 +31,8 @@ brief but follow from it or from the API docs.
 ## 0. Platform & constraints
 
 - [ ] Runs in the browser via `npx expo start --web`
-- [ ] Layout designed for a ~390 px phone screen; content stays readable on wider screens _(implied)_
-- [ ] Deployed link that works when opened on a phone _(implied: "we will open your link")_
+- [x] Layout designed for a ~390 px phone screen; content stays readable on wider screens _(implied)_
+- [ ] Deployed link (EAS Hosting) that works when opened on a phone _(implied: "we will open your link")_
 - [x] API base URL defined in exactly one place
 - [ ] No token in code, repo or build
 - [ ] Only allowed libraries (TanStack Query + Expo template)
@@ -44,9 +44,9 @@ brief but follow from it or from the API docs.
 - [x] Token stored in the browser and reused on reload
 - [x] A way to change the token
 - [x] Changing the token clears all cached data from the previous token _(implied: data is per token)_
-- [ ] 401 UNAUTHORIZED (invalid/expired) on any request forgets the token and returns the user to
-      the token screen with a "token not accepted" notice _(decision)_ — wired via the query and
-      mutation caches; tick once a screen makes API calls and it is verified
+- [x] 401 UNAUTHORIZED (invalid/expired) on any request forgets the token and returns the user to
+      the token screen with a "token not accepted" notice _(decision)_ — verified against the real
+      API with a made-up token
 - [x] Token field hidden by default, with a Show/Hide button _(decision)_
 - [x] Empty / whitespace-only token cannot be saved; surrounding whitespace is trimmed _(implied)_
 
@@ -69,21 +69,29 @@ brief but follow from it or from the API docs.
 - [x] All math in `bigint` base units (scaled by `decimals`)
 - [x] Fee: receive = amount − fee
 - [x] USD value per asset and total computed exactly with `bigint`, rounded only for display _(implied)_
-- [ ] Crypto amounts displayed without rounding or float conversion _(implied)_
+- [x] Crypto amounts displayed without rounding or float conversion _(implied)_
+- [x] Long amounts and totals never overflow: values wrap to their own line and break if needed;
+      long USD totals use a smaller font (checked at 390 and 320 px) _(decision)_
 
 ## 4. Balances (Home)
 
-- [ ] Each asset: available, pending, claiming
-- [ ] Total in USD (available + pending + claiming)
-- [ ] Below the total: USD of available now, pending and claiming
-- [ ] Data freshness from `asOf` (e.g. "updated 12 s ago"), ticking live _(implied)_
-- [ ] Loading state
-- [ ] Error state with retry
-- [ ] Empty state (no assets)
-- [ ] Manual refresh (button; pull-to-refresh is a no-op on web)
-- [ ] Refresh-in-progress indicator while keeping current data visible _(implied)_
-- [ ] Failed background refresh keeps the last data and shows that it may be stale _(implied)_
-- [ ] Balances recompute every 15 s; claims may not show up until the next snapshot, and the user is told _(implied)_
+- [x] Each asset: available, pending, claiming
+- [x] Total in USD (available + pending + claiming)
+- [x] Below the total: USD of available now, pending and claiming
+- [x] Data freshness from `asOf` (e.g. "updated 12 s ago"), ticking live _(implied)_
+- [x] Loading state
+- [x] Error state with retry
+- [x] Empty state (no assets)
+- [x] Manual refresh (button; pull-to-refresh is a no-op on web)
+- [x] Refresh-in-progress indicator while keeping current data visible _(implied)_
+- [x] Failed background refresh keeps the last data and shows that it may be stale _(implied)_
+- [x] Balances recompute every 15 s; claims may not show up until the next snapshot, and the user is told _(implied)_
+- [x] Auto-refresh every 15 s while the tab is visible (matches the snapshot cadence) _(implied)_
+- [ ] **Not done:** Refresh feedback. The label shows the snapshot age (`asOf`), and the server only
+      rebuilds snapshots every 15 s, so a Refresh inside that window returns the same `asOf` and the
+      label doesn't reset to "just now". Planned fix: show "Checked just now" (`dataUpdatedAt`) next
+      to "Snapshot from 12 s ago" (`asOf`). Cause not yet confirmed against the live API (compare
+      `asOf` across consecutive responses).
 
 ## 5. Claim
 

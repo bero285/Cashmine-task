@@ -3,15 +3,15 @@ import { Pressable, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 
-type FieldButtonProps = {
+type TextButtonProps = {
   label: string;
   onPress: () => void;
   accessibilityLabel?: string;
   disabled?: boolean;
 };
 
-// Small text button that sits inside a TextField (via `trailing`).
-export function FieldButton({ label, onPress, accessibilityLabel, disabled }: FieldButtonProps) {
+// Small text-only button, e.g. inside a TextField (via `trailing`) or a Refresh action.
+export function TextButton({ label, onPress, accessibilityLabel, disabled }: TextButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
