@@ -15,6 +15,8 @@ brief but follow from it or from the API docs.
   a duplicate claim.
 - Token is stored with AsyncStorage (localStorage on web).
 - Activity: one list, newest first, as the API returns it; no filters.
+- The token is not validated on save; a bad token is detected by the first 401.
+- No inline styles anywhere, including the template's ThemedText/ThemedView (per-scheme StyleSheets).
 - Claim amounts are sent in canonical form ("0.50" → "0.5"), so one value always gives one body.
 - Trailing zeros are stripped before the decimal-places check: "1.0" is accepted as 1.
 - A claim must be greater than its fee (receive amount > 0).
@@ -38,12 +40,15 @@ brief but follow from it or from the API docs.
 
 ## 1. Token
 
-- [ ] On first open, ask for the token (text field)
-- [ ] Token stored in the browser and reused on reload
-- [ ] A way to change the token
-- [ ] Changing the token clears all cached data from the previous token _(implied: data is per token)_
-- [ ] 401 UNAUTHORIZED (invalid/expired) leads the user to change the token, not to a generic error _(implied)_
-- [ ] Empty / whitespace-only token cannot be saved; surrounding whitespace is trimmed _(implied)_
+- [x] On first open, ask for the token (text field)
+- [x] Token stored in the browser and reused on reload
+- [x] A way to change the token
+- [x] Changing the token clears all cached data from the previous token _(implied: data is per token)_
+- [ ] 401 UNAUTHORIZED (invalid/expired) on any request forgets the token and returns the user to
+      the token screen with a "token not accepted" notice _(decision)_ — wired via the query and
+      mutation caches; tick once a screen makes API calls and it is verified
+- [x] Token field hidden by default, with a Show/Hide button _(decision)_
+- [x] Empty / whitespace-only token cannot be saved; surrounding whitespace is trimmed _(implied)_
 
 ## 2. API layer
 
@@ -97,6 +102,7 @@ brief but follow from it or from the API docs.
       (claim returned, or 400/409) _(decision 5)_
 - [ ] After a reload, an unconfirmed submission is offered for resubmission with the same key
       (server replays the original claim if it was created) _(implied by decision 5)_
+- [ ] A persisted unconfirmed claim is never resubmitted under a different token _(implied)_
 - [ ] Network error / 5xx / 504 on submit: outcome unknown, user can retry safely with the same key _(implied)_
 - [ ] Server VALIDATION errors shown on the matching field (`field`), e.g. amount above live available _(implied)_
 - [ ] 409 IDEMPOTENCY_MISMATCH handled with a clear message _(implied)_

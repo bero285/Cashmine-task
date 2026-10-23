@@ -14,6 +14,11 @@ export const Colors = {
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
+    border: '#D9D9E0',
+    primary: '#208AEF',
+    onPrimary: '#ffffff',
+    danger: '#D92D20',
+    success: '#1E8E3E',
   },
   dark: {
     text: '#ffffff',
@@ -21,6 +26,11 @@ export const Colors = {
     backgroundElement: '#212225',
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
+    border: '#3A3D42',
+    primary: '#3C9EFF',
+    onPrimary: '#ffffff',
+    danger: '#FF6B5E',
+    success: '#4CC96B',
   },
 } as const;
 
@@ -61,4 +71,5 @@ export const Spacing = {
   six: 64,
 } as const;
 
-export const MaxContentWidth = 800;
+// Designed for a ~390 px phone; on wider screens the content stays phone-sized and centred.
+export const MaxContentWidth = 480;
