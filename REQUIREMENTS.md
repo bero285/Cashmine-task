@@ -31,7 +31,7 @@ brief but follow from it or from the API docs.
 - [ ] Runs in the browser via `npx expo start --web`
 - [ ] Layout designed for a ~390 px phone screen; content stays readable on wider screens _(implied)_
 - [ ] Deployed link that works when opened on a phone _(implied: "we will open your link")_
-- [ ] API base URL defined in exactly one place
+- [x] API base URL defined in exactly one place
 - [ ] No token in code, repo or build
 - [ ] Only allowed libraries (TanStack Query + Expo template)
 - [ ] `npx expo lint` and `npx tsc --noEmit` pass
@@ -48,11 +48,13 @@ brief but follow from it or from the API docs.
 ## 2. API layer
 
 - [ ] Every request goes through TanStack Query
-- [ ] Responses and errors strictly typed, no `any`
-- [ ] Error envelope `{ error: { code, message, field?, retryAfterMs? } }` parsed into a typed error _(implied)_
-- [ ] Network failures (no response) are a separate typed error _(implied)_
-- [ ] Retry only retryable failures: network, 429, 500, 503, 504. Never retry 400/401/404/409 _(implied)_
-- [ ] 429 waits `retryAfterMs` (or `Retry-After`) before retrying _(implied)_
+- [x] Responses and errors strictly typed, no `any`
+- [x] Error envelope `{ error: { code, message, field?, retryAfterMs? } }` parsed into a typed error _(implied)_
+- [x] Network failures (no response) are a separate typed error _(implied)_
+- [x] Retry only retryable failures: network, 429, 500, 503, 504. Never retry 400/401/404/409 _(implied)_
+- [x] 429 waits `retryAfterMs` (or `Retry-After`) before retrying _(implied)_
+- [x] Client-side request timeout (30 s) so a stalled connection becomes a retryable error _(implied)_
+- [x] API payloads checked at runtime; a malformed 2xx body is a typed, non-retryable error _(implied)_
 - [ ] Amounts are kept as strings from the API; never JSON numbers, `Number` or `parseFloat`
 
 ## 3. Money logic
