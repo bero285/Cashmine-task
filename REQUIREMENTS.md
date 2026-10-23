@@ -15,6 +15,16 @@ brief but follow from it or from the API docs.
   a duplicate claim.
 - Token is stored with AsyncStorage (localStorage on web).
 - Activity: one list, newest first, as the API returns it; no filters.
+- Claim amounts are sent in canonical form ("0.50" → "0.5"), so one value always gives one body.
+- Trailing zeros are stripped before the decimal-places check: "1.0" is accepted as 1.
+- A claim must be greater than its fee (receive amount > 0).
+- ESLint (`eslint`, `eslint-config-expo`) kept as dev dependencies for `expo lint`.
+
+## Review later
+
+- [ ] USD bucket rounding: each bucket (available, pending, claiming) is summed exactly across
+      assets and then rounded down; the total is the sum of the rounded buckets so the screen adds
+      up. Trade-off: the total can be up to 2 cents below the exact grand total rounded down.
 
 ## 0. Platform & constraints
 
@@ -47,11 +57,11 @@ brief but follow from it or from the API docs.
 
 ## 3. Money logic
 
-- [ ] Amount format: digits, optional dot + digits, no leading zeros (`0.5`, `12` ok; `.5`, `1.`, `05`, `1e-3` rejected)
-- [ ] At most `decimals` decimal places per asset
-- [ ] All math in `bigint` base units (scaled by `decimals`)
-- [ ] Fee: receive = amount − fee
-- [ ] USD value per asset and total computed exactly with `bigint`, rounded only for display _(implied)_
+- [x] Amount format: digits, optional dot + digits, no leading zeros (`0.5`, `12` ok; `.5`, `1.`, `05`, `1e-3` rejected)
+- [x] At most `decimals` decimal places per asset
+- [x] All math in `bigint` base units (scaled by `decimals`)
+- [x] Fee: receive = amount − fee
+- [x] USD value per asset and total computed exactly with `bigint`, rounded only for display _(implied)_
 - [ ] Crypto amounts displayed without rounding or float conversion _(implied)_
 
 ## 4. Balances (Home)
@@ -101,11 +111,11 @@ brief but follow from it or from the API docs.
 
 ## 7. Tests
 
-- [ ] Unit tests: amount parsing
-- [ ] Unit tests: validation (format, decimals, min, max/available, fee)
-- [ ] Unit tests: fee / receive amount
-- [ ] Unit tests: USD totals
-- [ ] Unit tests: comma → dot normalisation, USD round-down
+- [x] Unit tests: amount parsing
+- [x] Unit tests: validation (format, decimals, min, max/available, fee)
+- [x] Unit tests: fee / receive amount
+- [x] Unit tests: USD totals
+- [x] Unit tests: comma → dot normalisation, USD round-down
 - [x] `npm test` runs Jest (`jest-expo` preset) _(implied)_
 
 ## 8. Activity (if time allows)
